@@ -70,5 +70,5 @@ https://zhuanlan.zhihu.com/p/122411512
 
 得到的结果大概是这样的：
 
-![avatar](\Photo\02\2-1.png)
+![image](https://github.com/MoChen2001/Games101/tree/master/Photo/02/2-1.png)
 
