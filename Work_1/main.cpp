@@ -25,52 +25,72 @@ Eigen::Matrix4f get_view_matrix(Eigen::Vector3f eye_pos)
     return view;
 }
 
-Eigen::Matrix4f get_model_matrix(float rotation_angle)
+Eigen::Matrix4f get_model_matrix(float rotation_angle ,float scaleFactor )
 {
     Eigen::Matrix4f model = Eigen::Matrix4f::Identity();
 
-    // TODO: Implement this function
-    // Create the model matrix for rotating the triangle around the Z axis.
-    // Then return it.
 
     rotation_angle = rotation_angle * MY_PI / 180;
 
+
+
     // Rotation Matrix
     // Rotation around the aixs Z
-    
     model << std::cos(rotation_angle), std::sin(rotation_angle),0,0,
     -1 * std::sin(rotation_angle), std::cos(rotation_angle),0,0,
     0,0,1,0,
     0,0,0,1;
     
 
-    /*
-    model << std::cos(rotation_angle),0,std::sin(rotation_angle),0,
-    -1 * std::sin(rotation_angle),0,std::cos(rotation_angle),0,
-    0,0,1,0,
+    
+    // Scale Matrix
+    // Scalefactor will be premath in the main function 
+    Eigen::Matrix4f scale = Eigen::Matrix4f::Identity();
+    scale << scaleFactor,0,0,0,
+    0,scaleFactor,0,0,
+    0,0,scaleFactor,0,
     0,0,0,1;
-    */
 
-    return model;
+
+
+    return model;// * scale;
 }
 
 Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio,
                                       float zNear, float zFar)
 {
-    // Students will implement this function
+    Eigen::Matrix4f projection,m,p,n;
 
-    Eigen::Matrix4f projection = Eigen::Matrix4f::Identity();
+    zNear = -zNear;
+    zFar = -zFar;  
+    eye_fov = eye_fov * MY_PI / 180;
+  
+    float r,l,t,b;
+    t = abs(std::tan(eye_fov / 2) * zNear);
+    b = -1 * t;
+    r = t * aspect_ratio;
+    l = -r;
 
-    // TODO: Implement this function
-    // Create the projection matrix for the given parameters.
-    // Then return it.
-    float denominator = zFar - zNear;
 
-    // Projection Matrix
-    projection << std::atan(eye_fov / 2) / aspect_ratio,0,0,0,
-    0, std::atan(eye_fov/2),0,0,
-    0,0,-1 * (zNear + zFar) / denominator, -2 * zNear * zFar / (denominator),
-    0,0,-1,0; 
+    n << 2 / (r - l), 0, 0, 0,\
+    0, 2 /(t - b), 0, 0,\
+    0, 0, 2 /(zNear - zFar), 0,\
+    0,0,0,1;
+
+
+    p << 1, 0, 0, -1 * (r + l) / 2,\
+    0, 1, 0, -1 *(t + b) / 2,\
+    0, 0, 1, -1 *(zFar + zNear) / 2,\
+    0, 0, 0, 1;
+
+    m << zNear,0,0,0, \
+    0,zNear,0,0,\
+    0,0,zNear + zFar, -1 * (zNear * zFar),\
+    0,0,1,0;
+
+
+    //std::cout <<  n * p * m;
+    projection = n * p * m;
 
     return projection;
 }
@@ -78,6 +98,7 @@ Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio,
 int main(int argc, const char** argv)
 {
     float angle = 0;
+    float scaleFactor = 0;
     bool command_line = false;
     std::string filename = "output.png";
 
@@ -108,7 +129,7 @@ int main(int argc, const char** argv)
     if (command_line) {
         r.clear(rst::Buffers::Color | rst::Buffers::Depth);
 
-        r.set_model(get_model_matrix(angle));
+        r.set_model(get_model_matrix(angle,1));
         r.set_view(get_view_matrix(eye_pos));
         r.set_projection(get_projection_matrix(45, 1, 0.1, 50));
 
@@ -124,7 +145,7 @@ int main(int argc, const char** argv)
     while (key != 27) {
         r.clear(rst::Buffers::Color | rst::Buffers::Depth);
 
-        r.set_model(get_model_matrix(angle));
+        r.set_model(get_model_matrix(angle, 1 + std::sin(scaleFactor)));
         r.set_view(get_view_matrix(eye_pos));
         r.set_projection(get_projection_matrix(45, 1, 0.1, 50));
 
@@ -138,7 +159,8 @@ int main(int argc, const char** argv)
         std::cout << "frame count: " << frame_count++ <<'\n';
 
         angle -= 1;
-        
+        scaleFactor += 0.25;
+
         if (key == 'a' || key == 'A') {
             angle += 10;
         }
