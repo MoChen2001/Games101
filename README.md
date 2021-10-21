@@ -2,6 +2,10 @@
 
 
 
+**2021-10-18**
+
+
+
 games101 也算是快看完了，设计了很多基础但是重要的图形学的东西。
 
 然后也是趁着还记得的这段时间做一下 games 的课后题，都是简单的东西，不会花太久的时间。
@@ -46,6 +50,10 @@ https://zhuanlan.zhihu.com/p/122411512
 
 
 
+**2021-10-19**
+
+
+
 推导出来之后，得到的结果跟我们常用的公式的结果是不一样的，我们常用的只有四个参数，可以直接根据现在的公式推导出经常用的公式，简单的几何问题，这里不再多说了。
 
 ---
@@ -56,7 +64,7 @@ https://zhuanlan.zhihu.com/p/122411512
 
 这个作业算是做了一半了把，完成了一下基础。
 
-基础目标是栅格化三角形，进阶目标是完成 MSAA。 
+基础目标是栅格化三角形，进阶目标是完成 SSAA 和 MSAA。 
 
 首先说基础目标，实际上挺简单的，我们要修改两个函数，栅格化三角形以及判断点是不是在三角形之内的函数。
 
@@ -70,5 +78,38 @@ https://zhuanlan.zhihu.com/p/122411512
 
 得到的结果大概是这样的：
 
-![image](https://github.com/MoChen2001/Games101/tree/master/Photo/02/2-1.png)
+![image](https://github.com/MoChen2001/Games101/tree/master/Photo/02/rasterizer.png)
 
+
+
+**2021-10-21**
+
+
+
+SSAA 写出来之后运行一下，然后虚拟机直接暴毙了，说明了这渣机确实该换了，也说明了 SSAA 的开销是真的大，SSAA 渲染两个三角新实在是扛不住，这里就勉强渲染一个三角形了，得到的效果还不错，
+
+![image](https://github.com/MoChen2001/Games101/tree/master/Photo/02/ssaa.png)
+
+
+
+
+
+然后是 MSAA，相对于 SSAA 来说开销就要小很多，效果也是不错的，开销会比较小，少了四倍像素的的存储和采样，因为是 CPU计算，所以实际上还少了一堆向量的计算，这个对于 CPU 来说开销也是巨大的。
+
+至于结果： ![image](https://github.com/MoChen2001/Games101/tree/master/Photo/02/msaa.png)
+
+看起来好像是对的，但真的是对的？
+
+试试渲染两个三角形，结果发现：
+
+ ![image](https://github.com/MoChen2001/Games101/tree/master/Photo/02/msaa_Wrond1.png)
+
+问题出在哪？
+
+问题在于处理了深度之后之后就不再进行深度检测而是直接写入导致的错误，然后想要试着改一下，结果：
+
+ ![image](https://github.com/MoChen2001/Games101/tree/master/Photo/02/msaa_Wrond2.png)
+
+出现了莫名其妙的黑色填充，奇怪的 BUG 增加了。
+
+感觉问题还是在于，最原本的深度值应该存储起来保证渲染的顺序是正常的，同时，要保证内部的颜色确实是守恒的。感觉黑边问题很可能出现在内部的颜色不守恒导致的，再加上这个渣机确实很难调试，明天在试着处理顺便优化一下 MSAA，希望能解决问题吧。

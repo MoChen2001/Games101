@@ -122,6 +122,9 @@ int main(int argc, const char** argv)
     auto ind_id = r.load_indices(ind);
     auto col_id = r.load_colors(cols);
 
+    bool ssaa = false;
+    bool msaa = true;
+
     int key = 0;
     int frame_count = 0;
 
@@ -133,7 +136,7 @@ int main(int argc, const char** argv)
         r.set_view(get_view_matrix(eye_pos));
         r.set_projection(get_projection_matrix(45, 1, 0.1, 50));
 
-        r.draw(pos_id, ind_id, col_id, rst::Primitive::Triangle);
+        r.draw(pos_id, ind_id, col_id, rst::Primitive::Triangle,ssaa,msaa);
         cv::Mat image(700, 700, CV_32FC3, r.frame_buffer().data());
         image.convertTo(image, CV_8UC3, 1.0f);
         cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
@@ -151,7 +154,7 @@ int main(int argc, const char** argv)
         r.set_view(get_view_matrix(eye_pos));
         r.set_projection(get_projection_matrix(45, 1, 0.1, 50));
 
-        r.draw(pos_id, ind_id, col_id, rst::Primitive::Triangle);
+        r.draw(pos_id, ind_id, col_id, rst::Primitive::Triangle,ssaa,msaa);
 
         cv::Mat image(700, 700, CV_32FC3, r.frame_buffer().data());
         image.convertTo(image, CV_8UC3, 1.0f);
@@ -160,6 +163,15 @@ int main(int argc, const char** argv)
         key = cv::waitKey(10);
 
         std::cout << "frame count: " << frame_count++ << '\n';
+
+        if(key == 'S' || key == 's')
+        {
+            ssaa = !ssaa;
+        }
+        if(key == 'M' || key == 'm')
+        {
+            msaa = !msaa;
+        }
     }
 
     return 0;

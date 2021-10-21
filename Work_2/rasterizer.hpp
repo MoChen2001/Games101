@@ -70,14 +70,14 @@ namespace rst
 
         void clear(Buffers buff);
 
-        void draw(pos_buf_id pos_buffer, ind_buf_id ind_buffer, col_buf_id col_buffer, Primitive type);
+        void draw(pos_buf_id pos_buffer, ind_buf_id ind_buffer, col_buf_id col_buffer, Primitive type,bool openSSAA,bool openMSAA);
 
         std::vector<Eigen::Vector3f>& frame_buffer() { return frame_buf; }
 
     private:
         void draw_line(Eigen::Vector3f begin, Eigen::Vector3f end);
 
-        void rasterize_triangle(const Triangle& t);
+        void rasterize_triangle(const Triangle& t,bool ssaa,bool msaa);
 
         // VERTEX SHADER -> MVP -> Clipping -> /.W -> VIEWPORT -> DRAWLINE/DRAWTRI -> FRAGSHADER
 
@@ -94,7 +94,7 @@ namespace rst
 
         std::vector<float> depth_buf;
         int get_index(int x, int y);
-
+        int get_index_ssaa(int x, int y, int mulNum);
         int width, height;
 
         int next_id = 0;
