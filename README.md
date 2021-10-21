@@ -102,13 +102,13 @@ SSAA 写出来之后运行一下，然后虚拟机直接暴毙了，说明了这
 
 试试渲染两个三角形，结果发现：
 
- ![image](https://github.com/MoChen2001/Games101/tree/master/Photo/02/msaa_Wrong1.png)
+ ![image](https://github.com/MoChen2001/Games101/tree/master/Photo/02/msaa_Wrong_1.png)
 
 问题出在哪？
 
 问题在于处理了深度之后之后就不再进行深度检测而是直接写入导致的错误，然后想要试着改一下，结果：
 
- ![image](https://github.com/MoChen2001/Games101/tree/master/Photo/02/msaa_Wrong2.png)
+ ![image](https://github.com/MoChen2001/Games101/tree/master/Photo/02/msaa_Wrong_2.png)
 
 出现了莫名其妙的黑色填充，奇怪的 BUG 增加了。
 
