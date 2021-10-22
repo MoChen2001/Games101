@@ -219,30 +219,16 @@ void rst::rasterizer::rasterize_triangle(const Triangle& t,bool ssaa ,bool msaa)
     // open msaa
     else if(msaa == true)
     {
-        std::vector<float> depth_buf_msaa;
 
-        depth_buf_msaa.resize(width * 2 * height * 2);
-
-        std::fill(depth_buf_msaa.begin(), depth_buf_msaa.end(), std::numeric_limits<float>::infinity());
-
-        minX *= 2;
-        minY *= 2;
-        maxY *= 2;
-        maxX *= 2;
-
-        Eigen::Vector3f vertices[] = {
-            {v[0].x() * 2, v[0].y() * 2, v[0].z()},
-            {v[1].x() * 2, v[1].y() * 2, v[1].z()},
-            {v[2].x() * 2, v[2].y() * 2, v[2].z()}
-        };
         
         for (int i = minX; i <= maxX; i++)
-          {
+        {
             for ( int j = minY; j <= maxY; j++)
             {
-                if(insideTriangle(i,j,vertices))
+            
+                if(insideTriangle(i + 0.5,j + 0.5,t.v))
                 {
-                    auto tup = computeBarycentric2D(i + 0.5, j + 0.5, vertices);
+                    auto tup = computeBarycentric2D(i + 0.5, j + 0.5, t.v);
 
                     float alpha, beta, gamma;
                     std::tie(alpha, beta, gamma) = tup;
@@ -253,71 +239,166 @@ void rst::rasterizer::rasterize_triangle(const Triangle& t,bool ssaa ,bool msaa)
                     float z_interpolated = alpha * v[0].z() / v[0].w() + beta * v[1].z() / v[1].w() + gamma * v[2].z() / v[2].w();
                     z_interpolated *= w_reciprocal;
 
-                    if(depth_buf_msaa[get_index_ssaa(i, j, 2)] > z_interpolated)
+
+
+                    if( depth_buf[get_index(i + 0.5,j + 0.5)] > z_interpolated)
                     {
-                        depth_buf_msaa[get_index_ssaa(i, j, 2)] = z_interpolated;
+                        depth_buf[get_index(i + 0.5,j+ 0.5)] = z_interpolated;
+                        Eigen::Vector3f point = {(float)i,(float)j ,z_interpolated};
+
+
+                        float count = 0;
+
+
+                        count += insideTriangle(i + 0.25,j + 0.25,t.v) ? 1 : 0;
+                        count += insideTriangle(i + 0.25,j + 0.75,t.v) ? 1 : 0;
+                        count += insideTriangle(i + 0.75,j + 0.25,t.v) ? 1 : 0;
+                        count += insideTriangle(i + 0.75,j + 0.75,t.v) ? 1 : 0;
+
+                        Eigen::Vector3f color = t.getColor() * (count / 4);
+                        set_pixel(point,color);
+
+
+
+
+
+                        // float z_1,z_2,z_3,z_4,count = 0;
+                        // tup =  computeBarycentric2D(i + 0.25, j + 0.25, t.v);
+                        // std::tie(alpha, beta, gamma) = tup;
+                        // w_reciprocal = 1.0/(alpha / v[0].w() + beta / v[1].w() + gamma / v[2].w());
+                        // z_1 = alpha * v[0].z() / v[0].w() + beta * v[1].z() / v[1].w() + gamma * v[2].z() / v[2].w();
+                        // z_1 *= w_reciprocal;
+
+                        // tup =  computeBarycentric2D(i + 0.75, j + 0.25, t.v);
+                        // std::tie(alpha, beta, gamma) = tup;
+                        // w_reciprocal = 1.0/(alpha / v[0].w() + beta / v[1].w() + gamma / v[2].w());
+                        // z_2 = alpha * v[0].z() / v[0].w() + beta * v[1].z() / v[1].w() + gamma * v[2].z() / v[2].w();
+                        // z_2 *= w_reciprocal;
+
+                        // tup =  computeBarycentric2D(i + 0.25, j + 0.75, t.v);
+                        // std::tie(alpha, beta, gamma) = tup;
+                        // w_reciprocal = 1.0/(alpha / v[0].w() + beta / v[1].w() + gamma / v[2].w());
+                        // z_3 = alpha * v[0].z() / v[0].w() + beta * v[1].z() / v[1].w() + gamma * v[2].z() / v[2].w();
+                        // z_3 *= w_reciprocal;
+
+                        // tup =  computeBarycentric2D(i + 0.75, j + 0.75, t.v);
+                        // std::tie(alpha, beta, gamma) = tup;
+                        // w_reciprocal = 1.0/(alpha / v[0].w() + beta / v[1].w() + gamma / v[2].w());
+                        // z_4 = alpha * v[0].z() / v[0].w() + beta * v[1].z() / v[1].w() + gamma * v[2].z() / v[2].w();
+                        // z_4 *= w_reciprocal;
+
+                        // count += (int)z_1 == (int)z_interpolated ? 1 : 0;
+                        // count += (int)z_2 == (int)z_interpolated ? 1 : 0;
+                        // count += (int)z_3 == (int)z_interpolated ? 1 : 0;
+                        // count += (int)z_4 == (int)z_interpolated ? 1 : 0;
+
+                        // Eigen::Vector3f color = t.getColor() * (count / 4);
+                        // set_pixel(point,color);
                     }
                 }
             }
         }
 
 
-        for(int i = minX; i <= maxX; i += 2)
-        {
-            for(int j = minY; j <= maxY; j += 2)
-            {
+        // std::vector<float> depth_buf_msaa;
 
+        // depth_buf_msaa.resize(width * 2 * height * 2);
 
-                int count = 0;
-                float min_dep = std::numeric_limits<float>::infinity(); 
+        // std::fill(depth_buf_msaa.begin(), depth_buf_msaa.end(), std::numeric_limits<float>::infinity());
+
+        // minX *= 2;
+        // minY *= 2;
+        // maxY *= 2;
+        // maxX *= 2;
+
+        // Eigen::Vector3f vertices[] = {
+        //     {v[0].x() * 2, v[0].y() * 2, v[0].z()},
+        //     {v[1].x() * 2, v[1].y() * 2, v[1].z()},
+        //     {v[2].x() * 2, v[2].y() * 2, v[2].z()}
+        // };
+        
+        // for (int i = minX; i <= maxX; i++)
+        //   {
+        //     for ( int j = minY; j <= maxY; j++)
+        //     {
+        //         if(insideTriangle(i,j,vertices))
+        //         {
+        //             auto tup = computeBarycentric2D(i + 0.5, j + 0.5, vertices);
+
+        //             float alpha, beta, gamma;
+        //             std::tie(alpha, beta, gamma) = tup;
+        //             float w_reciprocal = 1.0/(alpha / v[0].w() + beta / v[1].w() + gamma / v[2].w());
                 
-                float dep_1 = depth_buf_msaa[get_index_ssaa(i, j, 2)];
-                float dep_2 = depth_buf_msaa[get_index_ssaa(i + 1, j, 2)];
-                float dep_3 = depth_buf_msaa[get_index_ssaa(i, j + 1, 2)];
-                float dep_4 = depth_buf_msaa[get_index_ssaa(i + 1, j + 1, 2)];
+
+        //             // In fact the v[0].w store the z value before thr pespective transform
+        //             float z_interpolated = alpha * v[0].z() / v[0].w() + beta * v[1].z() / v[1].w() + gamma * v[2].z() / v[2].w();
+        //             z_interpolated *= w_reciprocal;
+
+        //             if(depth_buf_msaa[get_index_ssaa(i, j, 2)] > z_interpolated)
+        //             {
+        //                 depth_buf_msaa[get_index_ssaa(i, j, 2)] = z_interpolated;
+        //             }
+        //         }
+        //     }
+        // }
 
 
-                if(min_dep != dep_1 && dep_1 == z_interpolated)
-                {
-                    count++;
-                }
-                if(min_dep != dep_2 && dep_2 == z_interpolated)
-                {
-                    count++;
-                }
-                if(min_dep != dep_3 && dep_3 == z_interpolated)
-                {
-                    count++;
-                }
-                if(min_dep != dep_4 && dep_4 == z_interpolated)
-                {
-                    count++;
-                }
-                Eigen::Vector3f point = {(float)(i / 2),(float)(j / 2), min_dep};
-                set_pixel(point,t.getColor() * count / 4);
+        // for(int i = minX; i <= maxX; i += 2)
+        // {
+        //     for(int j = minY; j <= maxY; j += 2)
+        //     {
 
 
-                // the code will have the depth problem 
-                // at the same time, it will cause some problem that black content and don't know why
-                // min_dep = std::min(dep_1,std::min(dep_2,std::min(dep_3,dep_4)));
+        //         int count = 0;
+        //         float min_dep = std::numeric_limits<float>::infinity(); 
+                
+        //         float dep_1 = depth_buf_msaa[get_index_ssaa(i, j, 2)];
+        //         float dep_2 = depth_buf_msaa[get_index_ssaa(i + 1, j, 2)];
+        //         float dep_3 = depth_buf_msaa[get_index_ssaa(i, j + 1, 2)];
+        //         float dep_4 = depth_buf_msaa[get_index_ssaa(i + 1, j + 1, 2)];
 
 
-                // if(min_dep != std::numeric_limits<float>::infinity())
-                // {
-                //     int count = 0;
+        //         if(min_dep != dep_1 && dep_1 == z_interpolated)
+        //         {
+        //             count++;
+        //         }
+        //         if(min_dep != dep_2 && dep_2 == z_interpolated)
+        //         {
+        //             count++;
+        //         }
+        //         if(min_dep != dep_3 && dep_3 == z_interpolated)
+        //         {
+        //             count++;
+        //         }
+        //         if(min_dep != dep_4 && dep_4 == z_interpolated)
+        //         {
+        //             count++;
+        //         }
+        //         Eigen::Vector3f point = {(float)(i / 2),(float)(j / 2), min_dep};
+        //         set_pixel(point,t.getColor() * count / 4);
 
-                //     count += dep_1 == min_dep ? 1 : 0;
-                //     count += dep_2 == min_dep ? 1 : 0;
-                //     count += dep_3 == min_dep ? 1 : 0;
-                //     count += dep_4 == min_dep ? 1 : 0;
 
-                //     Eigen::Vector3f point = {(float)(i / 2),(float)(j / 2), min_dep};
+        //         // the code will have the depth problem 
+        //         // at the same time, it will cause some problem that black content and don't know why
+        //         // min_dep = std::min(dep_1,std::min(dep_2,std::min(dep_3,dep_4)));
+
+
+        //         // if(min_dep != std::numeric_limits<float>::infinity())
+        //         // {
+        //         //     int count = 0;
+
+        //         //     count += dep_1 == min_dep ? 1 : 0;
+        //         //     count += dep_2 == min_dep ? 1 : 0;
+        //         //     count += dep_3 == min_dep ? 1 : 0;
+        //         //     count += dep_4 == min_dep ? 1 : 0;
+
+        //         //     Eigen::Vector3f point = {(float)(i / 2),(float)(j / 2), min_dep};
 
                 
-                //     set_pixel(point,t.getColor() * count / 4);
-                // }
-            }
-        }
+        //         //     set_pixel(point,t.getColor() * count / 4);
+        //         // }
+        //     }
+        // }
 
 
     }

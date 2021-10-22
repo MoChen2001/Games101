@@ -96,20 +96,41 @@ SSAA 写出来之后运行一下，然后虚拟机直接暴毙了，说明了这
 
 然后是 MSAA，相对于 SSAA 来说开销就要小很多，效果也是不错的，开销会比较小，少了四倍像素的的存储和采样，因为是 CPU计算，所以实际上还少了一堆向量的计算，这个对于 CPU 来说开销也是巨大的。
 
-至于结果： ![image](https://github.com/MoChen2001/Games101/tree/master/Photo/02/msaa.png)
+至于结果： ![image](https://github.com/MoChen2001/Games101/tree/master/Photo/02/msaa_1.png)
 
 看起来好像是对的，但真的是对的？
 
 试试渲染两个三角形，结果发现：
 
- ![image](https://github.com/MoChen2001/Games101/tree/master/Photo/02/msaa_Wrong_1.png)
+ ![image](https://github.com/MoChen2001/Games101/tree/master/Photo/02/msaa_Wrong_2.png)
 
 问题出在哪？
 
 问题在于处理了深度之后之后就不再进行深度检测而是直接写入导致的错误，然后想要试着改一下，结果：
 
- ![image](https://github.com/MoChen2001/Games101/tree/master/Photo/02/msaa_Wrong_2.png)
+ ![image](https://github.com/MoChen2001/Games101/tree/master/Photo/02/msaa_Wrong_1.png)
 
 出现了莫名其妙的黑色填充，奇怪的 BUG 增加了。
 
 感觉问题还是在于，最原本的深度值应该存储起来保证渲染的顺序是正常的，同时，要保证内部的颜色确实是守恒的。感觉黑边问题很可能出现在内部的颜色不守恒导致的，再加上这个渣机确实很难调试，明天在试着处理顺便优化一下 MSAA，希望能解决问题吧。
+
+
+
+**2021-10-22**
+
+差不多是解决了，首先是关于 msaa 的深度错误问题，这里直接把 msaa 的那个需要扩充出来的深度缓冲区去掉，然后每次检测到一个点要渲染的时候，就对他的四个子像素块进行深度的判断（这里也可以判断该点在不在三角形内，本题中场景比较简单所以这种简化方式也是可以的），然后对颜色进行乘除操作就可以。
+
+![image](https://github.com/MoChen2001/Games101/tree/master/Photo/02/msaa_Wrong_3.png)
+
+然后说说这个黑色填充问题，实际上还是很简单的，因为判断的时候使用的是浮点数判断相等，浮点数判断相等工业界很难实现，所以只要判断的时候转成整数就可以规避了。
+
+最后的结果：
+
+![image](https://github.com/MoChen2001/Games101/tree/master/Photo/02/msaa_2.png)
+
+  感觉效果一般，不知道是本身就这样还是我的实现有问题，感觉实现的话，应该是没啥问题的...
+
+
+
+做是做完了，但感觉还可以优化一下，下午上完课再回来优化一下吧....
+
