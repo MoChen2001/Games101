@@ -158,3 +158,30 @@ SSAA 写出来之后运行一下，然后虚拟机直接暴毙了，说明了这
 
 ![image](https://github.com/MoChen2001/Games101/tree/master/Photo/03/normal.png)
 
+
+
+
+
+然后是对于光照模型，blinn-phong 模型已经是老朋友了，没必要多说，渲染的结果是这样的：
+
+![image](https://github.com/MoChen2001/Games101/tree/master/Photo/03/phong.png)
+
+这里还要注意浮点数的精度问题，我们在 blinn-phong 模型中会用到半角向量，如果你使用正交化之后的光源向量（lightdir）和视角向量(viewdir)，就会出现如下的错误：
+
+![image](https://github.com/MoChen2001/Games101/tree/master/Photo/03/phong_wrong.png)
+
+只能说是非常离谱，但是是否正交化在数学上实际上是没有太大的影响的，因此这里就先不正交化求得半角向量之后在进行正交化就可以获得正确的结果。
+
+
+
+然后是 贴图，没少好说的感觉 ，uv 都给你了，直接代替漫反射系数就行了。
+
+然后是 bump map 和 displacement map ，这个还是比较有意思的，涉及到了 TBN 的求法。
+
+只需要注意，bump map 只是改变了 normal 来欺骗光照，模型本身实际上并没有发生改变。
+
+displacement map 会直接改变模型的点，也常常用在对低模进行处理的贴图。
+
+
+
+还想搞一个透视修正插值来着，有空的话搞一下吧，还有双线性插值啥的。
