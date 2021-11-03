@@ -198,3 +198,30 @@ displacement map 会直接改变模型的点，也常常用在对低模进行处
 
 ![image](https://github.com/MoChen2001/Games101/tree/master/Photo/04/my_bezier_curve.png)
 
+----
+
+## ***Work5***
+
+**2021-11-3**
+
+这个作业时完成 Witted-style 光线追踪，主要是实现 射线和 三角形 的相交（Moller Trumbore 算法）。
+
+不多说了，太懒了。
+
+
+
+---
+
+## ***Work6***
+
+作业六还是比较有意思的，主要的知识点有： 射线和 AABB 包围盒的相交检测、以及 BVH 树的遍历。
+
+
+
+也都是老知识点了，没有啥可说的感觉....
+
+
+
+太懒了，不写了。
+
+------
